@@ -37,9 +37,10 @@ class CustomUser(AbstractUser):
         max_length=150,
     )
     avatar = models.ImageField(
-        verbose_name='Уникальный юзернейм',
+        verbose_name='Аватар',
         null=True,
-        blank=True
+        blank=True,
+        default=None
     )
 
     class Meta:

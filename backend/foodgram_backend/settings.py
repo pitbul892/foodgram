@@ -9,8 +9,9 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+import os
 from pathlib import Path
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -126,16 +127,18 @@ STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 DJOSER = {
     'LOGIN_FIELD': 'email',
-    # 'SERIALIZERS': {
-    #     'user_create': 'гыукы.serializers.CustomUserCreateSerializer',
-    #     'user': 'api.serializers.CustomUserSerializer',
-    #     'current_user': 'api.serializers.CustomUserSerializer',
-    # },
+    'SERIALIZERS': {
+        # 'user_create': 'гыукы.serializers.CustomUserCreateSerializer',
+        'user': 'users.serializers.UserSerializer',
+        # 'current_user': 'api.serializers.CustomUserSerializer',
+    },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],
         'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
@@ -152,4 +155,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 6
+
 }
