@@ -21,3 +21,9 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'first_name', 'last_name', 'avatar')
+ 
+class AvatarSerializer(serializers.ModelSerializer):
+    avatar = Base64ImageField(required=False, allow_null=True)
+    class Meta:
+        model = User
+        fields = ('avatar',)

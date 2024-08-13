@@ -137,11 +137,13 @@ DJOSER = {
     'SERIALIZERS': {
         # 'user_create': 'гыукы.serializers.CustomUserCreateSerializer',
         'user': 'users.serializers.UserSerializer',
-        # 'current_user': 'api.serializers.CustomUserSerializer',
+        'current_user': 'users.serializers.UserSerializer',
     },
     'PERMISSIONS': {
+        
         'user_list': ['rest_framework.permissions.AllowAny'],
         'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+        'current_user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly']
     },
     'HIDE_USERS': False
     
