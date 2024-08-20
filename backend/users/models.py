@@ -49,3 +49,13 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+
+class Subscriptions(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name='user')
+    subscriber = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name='subscriber')
+
+
+    class Meta:
+        verbose_name = 'Подписки'
