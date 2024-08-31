@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-c$*3j=ax^d1txttbzg#u$iyu9^u@w9d3o^j@g5uinm=r1)mnnn
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
+HOST = "https://ddd"
 
 # Application definition
 
@@ -40,9 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework.authtoken',
     'rest_framework',
+    'django_filters',
     'djoser',
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
+    'recipes.apps.RecipesConfig',
 ]
 
 MIDDLEWARE = [

@@ -32,7 +32,17 @@ class AvatarSerializer(serializers.ModelSerializer):
         fields = ('avatar',)
 
 class SubscribeSerializer(serializers.ModelSerializer):
-    # user = UserSerializer(many=True)
+    
+
     class Meta:
-        model = CustomUser
-        fields = 'id', 'email', 'username', 'first_name', 'last_name', 'avatar', 'is_subscribed'
+        model = Subscriptions
+        fields = ('user', 'subscriber')
+        read_only = ('user', 'subscriber')
+
+class SubscribtionSerializer(UserSerializer):
+    
+    # recipes = User.resipes.all()
+
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'avatar', 'is_subscribed', 'recipes')

@@ -1,12 +1,14 @@
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from djoser import views
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+from rest_framework.pagination import LimitOffsetPagination
 from .models import Subscriptions
-from .serializers import UserSerializer, AvatarSerializer, SubscribeSerializer
+from .serializers import UserSerializer, AvatarSerializer, SubscribeSerializer, SubscribtionSerializer
 
 User = get_user_model()
 
@@ -15,6 +17,7 @@ class UserViewSet(views.UserViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (AllowAny,)
+   
 
     @action(
         methods=[
@@ -59,21 +62,23 @@ class UserViewSet(views.UserViewSet):
         # permission_classes=[IsAuthenticated,]
     )
     def subscribe(self, request, id=None):
-        subscriber = request.user
-        user_obj = self.get_object()
-        serializer = SubscribeSerializer
-
-        if user_obj == subscriber:
-            return Response(
-                "Нельзя подписываться на самого себя",
-                status=status.HTTP_400_BAD_REQUEST
+        user = self.request.user
+        author = get_object_or_404(User, id=id)
+        if self.request.method == "POST":
+            serializer = SubscribeSerializer(
+                data={'subscriber': author.id, 'user': user.id},
+                context={"request": request})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            serializer = SubscribtionSerializer(
+                author, context={"request": request}
             )
-        subscription, created = Subscriptions.objects.get_or_create(
-            user=user_obj,
-            subscriber=request.user
-        )
-        serializer = SubscribeSerializer(
-            subscription,
-            context={'request': request}
-        )
-        return Response(status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # subscription = Subscriptions.objects.filter(
+        #     user=request.user, author=id)
+        # if subscription.exists():
+        #     subscription.delete()
+        #     return Response(status=status.HTTP_204_NO_CONTENT)
+        # return Response(
+        #     {'error': 'Нет подписки для удаления.'},
+        #     status=status.HTTP_400_BAD_REQUEST)

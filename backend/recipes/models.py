@@ -1,12 +1,15 @@
 from django.db import models
-from django.core.validators import MinLengthValidator
-
-from .constants import (
+from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator
+import core
+from core.constants import (
     INGR_NAME_MAX_LENGHT,
     INGR_UNIT_MAX_LENGHT,
     RECIPE_NAME_MAX_LENGHT,
     TAG_MAX_LENGHT
 )
+
+User = get_user_model()
 class Tag(models.Model):
     name = models.CharField(max_length=TAG_MAX_LENGHT, unique=True)
     slug = models.CharField(max_length=TAG_MAX_LENGHT, unique=True)
@@ -22,8 +25,9 @@ class Ingredient(models.Model):
         return self.name
 
 class Recipe(models.Model):
-    author = models.TextField(default='Afftor')
-    ingredients = models.ManyToManyField(Ingredient, through='RecipeIngredient', through_fields=('recipe', 'ingredient'),)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recipes')
+    ingredients = models.ManyToManyField(Ingredient, through='RecipeIngredient')
+    # , through_fields=('recipe', 'ingredient'),
     tags = models.ManyToManyField(Tag, through='TagRecipe')
     image = models.ImageField(
         upload_to='api/images/'
@@ -53,7 +57,9 @@ class RecipeIngredient(models.Model):
         on_delete=models.CASCADE,
         related_name='recipe_ingredients'
     )
-    amount = models.PositiveSmallIntegerField()
+    amount = models.PositiveIntegerField(
+        validators=[MinValueValidator(1)]
+    )
 
     def __str__(self):
         return f'{self.ingredient} {self.recipe} {self.amount}'
