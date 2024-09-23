@@ -1,5 +1,4 @@
 """Функции."""
-from rest_framework import serializers
 
 
 def txt_file(data):
