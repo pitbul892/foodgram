@@ -50,11 +50,8 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         related_name='recipes'
     )
-    # ingredients = models.ManyToManyField(
-    #     Ingredient,
-    #     through='RecipeIngredient'
-    # )
-    tags = models.ManyToManyField(Tag)
+
+    tags = models.ManyToManyField(Tag, blank=False)
     image = models.ImageField(
         upload_to='api/images/',
     )
