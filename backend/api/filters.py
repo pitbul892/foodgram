@@ -19,10 +19,12 @@ class RecipeFilter(django_filters.FilterSet):
         field_name='author',
         queryset=User.objects.all()
     )
-    is_in_shopping_cart = django_filters.NumberFilter(
+
+    is_in_shopping_cart = filters.BooleanFilter(
         method="filter_is_in_shopping_cart",
     )
-    is_favorited = django_filters.NumberFilter(
+
+    is_favorited = filters.BooleanFilter(
         method="filter_is_favorited",
     )
 
@@ -34,7 +36,6 @@ class RecipeFilter(django_filters.FilterSet):
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
         """Фильтр наличия рецепта в списке покупок."""
-        value = bool(int(value))
         user = self.request.user
         if user.is_authenticated:
             if value:
@@ -44,7 +45,6 @@ class RecipeFilter(django_filters.FilterSet):
 
     def filter_is_favorited(self, queryset, name, value):
         """Фильтр наличия рецепта в избранных."""
-        value = bool(int(value))
         user = self.request.user
         if user.is_authenticated:
             if value:

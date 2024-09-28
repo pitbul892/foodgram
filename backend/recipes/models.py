@@ -50,13 +50,13 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         related_name='recipes'
     )
-    ingredients = models.ManyToManyField(
-        Ingredient,
-        through='RecipeIngredient'
-    )
-    tags = models.ManyToManyField(Tag, through='TagRecipe')
+    # ingredients = models.ManyToManyField(
+    #     Ingredient,
+    #     through='RecipeIngredient'
+    # )
+    tags = models.ManyToManyField(Tag)
     image = models.ImageField(
-        upload_to='api/images/'
+        upload_to='api/images/',
     )
     name = models.CharField(max_length=RECIPE_NAME_MAX_LENGHT)
     text = models.TextField()
@@ -74,34 +74,24 @@ class Recipe(models.Model):
         """Имя."""
         return self.name
 
-
-class TagRecipe(models.Model):
-    """Модель взаимодействия тэгов с рецептами."""
-
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-
-    class Meta:
-        """Meta."""
-
-        verbose_name = 'Тэг рецепта'
-        verbose_name_plural = 'Тэги рецептов'
-
-    def __str__(self):
-        """Имя."""
-        return f'{self.tag} {self.recipe}'
+    @property
+    def ingredients_with_amount(self):
+        """Возвращает список ингредиентов с их количеством."""
+        return RecipeIngredient.objects.filter(
+            recipe=self).select_related('ingredient')
 
 
 class RecipeIngredient(models.Model):
     """Модель взаимодействия ингредиентов с рецептами."""
 
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE,
+                                   related_name='recipe_ingredients')
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
         related_name='recipe_ingredients'
     )
-    amount = models.PositiveIntegerField(
+    amount = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)]
     )
 
@@ -110,14 +100,20 @@ class RecipeIngredient(models.Model):
 
         verbose_name = 'Ингредиент рецепта'
         verbose_name_plural = 'Ингредиенты рецептов'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['ingredient', 'recipe'],
+                name='unique_recipe_ingredient'
+            )
+        ]
 
     def __str__(self):
         """Имя."""
         return f'{self.ingredient} {self.recipe} {self.amount}'
 
 
-class ShoppingCart(models.Model):
-    """Модель списка покупок."""
+class BaseShopAndFavorite(models.Model):
+    """Абстрактная модель списка покупок и избранных."""
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
@@ -125,8 +121,22 @@ class ShoppingCart(models.Model):
     class Meta:
         """Meta."""
 
+        abstract = True
+
+    def __str__(self):
+        """Имя."""
+        return f'{self.recipe} - {self.user} '
+
+
+class ShoppingCart(BaseShopAndFavorite):
+    """Модель списка покупок."""
+
+    class Meta:
+        """Meta."""
+
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок пользователей'
+        db_table = 'shopping_list'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
@@ -134,29 +144,19 @@ class ShoppingCart(models.Model):
             ),
         ]
 
-    def __str__(self):
-        """Имя."""
-        return f'{self.recipe} in shop {self.user} '
 
-
-class FavoriteRecipes(models.Model):
+class FavoriteRecipes(BaseShopAndFavorite):
     """Модель избранных рецептов."""
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 
     class Meta:
         """Meta."""
 
         verbose_name = 'Избранный рецепт пользователя.'
         verbose_name_plural = 'Избранные рецепты пользователей.'
+        db_table = 'favorite_recipes'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
                 name='unique_favorite_user_recipe'
             ),
         ]
-
-    def __str__(self):
-        """Имя."""
-        return f'{self.recipe} in favorite {self.user} '

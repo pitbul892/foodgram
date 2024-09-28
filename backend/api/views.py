@@ -58,14 +58,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeCreateSerializer
         return RecipeReadSerializer
 
-    def get_serializer_context(self):
-        """Добавляем request в контекст."""
-        return {'request': self.request}
-
-    def perform_create(self, serializer):
-        """Значение поля author."""
-        serializer.save(author=self.request.user)
-
     @action(
         methods=[
             'get',
@@ -80,18 +72,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
             {'short-link': f'{settings.HOST}/{id}'}, status=status.HTTP_200_OK
         )
 
-    @action(
-        methods=['post', 'delete'],
-        detail=True,
-        url_path='shopping_cart',
-    )
-    def shopping_cart(self, request, pk=None):
-        """Добавление рецепта в корзину."""
+    def shop_fav_recipe(self, request, pk, serializer, model):
+        """Базовая модель для списка покупок и избранных."""
         user = self.request.user
         recipe = get_object_or_404(Recipe, id=pk)
         if request.method == "POST":
-
-            serializer = RecipeShoppingCartSerializer(
+            serializer = serializer(
                 data={'user': user.id, 'recipe': recipe.id},
                 context={"request": request},
             )
@@ -111,11 +97,38 @@ class RecipeViewSet(viewsets.ModelViewSet):
             },
         )
         try:
-            recipe_in_shop = ShoppingCart.objects.get(user=user, recipe=recipe)
+            recipe_select = model.objects.get(user=user, recipe=recipe)
         except Exception:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        recipe_in_shop.delete()
+        recipe_select.delete()
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        methods=['post', 'delete'],
+        detail=True,
+        url_path='shopping_cart',
+    )
+    def shopping_cart(self, request, pk=None):
+        """Добавление рецепта в корзину."""
+        return self.shop_fav_recipe(
+            request,
+            pk,
+            RecipeShoppingCartSerializer,
+            ShoppingCart
+        )
+
+    @action(
+        methods=['post', 'delete'],
+        detail=True,
+    )
+    def favorite(self, request, pk=None):
+        """Получение списка продуктов."""
+        return self.shop_fav_recipe(
+            request,
+            pk,
+            FavoriteRecipesSerializer,
+            FavoriteRecipes
+        )
 
     @action(
         methods=[
@@ -135,45 +148,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             data, content_type='text/plain', status=status.HTTP_200_OK
         )
 
-    @action(
-        methods=['post', 'delete'],
-        detail=True,
-    )
-    def favorite(self, request, pk=None):
-        """Получение списка продуктов."""
-        user = request.user
-        recipe = get_object_or_404(Recipe, id=pk)
-
-        if request.method == "POST":
-            serializer = FavoriteRecipesSerializer(
-                data={'user': user.id, 'recipe': recipe.id},
-                context={"request": request},
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            serializer = RecipeSerializer(
-                recipe,
-                context={
-                    'request': request,
-                },
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        serializer = RecipeSerializer(
-            recipe,
-            context={
-                'request': request,
-            },
-        )
-        try:
-            recipe_in_fav = FavoriteRecipes.objects.get(
-                user=user,
-                recipe=recipe
-            )
-        except Exception:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        recipe_in_fav.delete()
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
-
 
 class UserViewSet(views.UserViewSet):
     """Класс пользователей."""
@@ -182,20 +156,11 @@ class UserViewSet(views.UserViewSet):
     serializer_class = UserSerializer
     permission_classes = (AllowAny,)
 
-    @action(
-        methods=[
-            'get',
-        ],
-        detail=False,
-        permission_classes=[
-            IsAuthenticated,
-        ],
-    )
-    def me(self, request):
-        """Моя страница."""
-        user = request.user
-        serializer = UserSerializer(user, context={"request": request})
-        return Response(serializer.data)
+    def get_permissions(self):
+        """Изменение прав доступа для метода `me`."""
+        if self.action == 'me':
+            return [IsAuthenticated()]
+        return super().get_permissions()
 
     @action(
         methods=['put', 'delete'],

@@ -1,10 +1,10 @@
 """Модели пользователя и все что с ним связано."""
+from core.constants import FIRST_LAST_NAME
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
 from django.db import models
 
 
-class CustomUser(AbstractUser):
+class UserEmail(AbstractUser):
     """Кастомная модель пользоваетля."""
 
     USERNAME_FIELD = 'email'
@@ -17,30 +17,18 @@ class CustomUser(AbstractUser):
         verbose_name='Адрес электронной почты',
         unique=True
     )
-    username = models.CharField(
-        validators=[
-            RegexValidator(
-                regex=r'^[\w.@+-]+\Z',
-                message='Недопустимые символы',
-            )
-        ],
-        max_length=150,
-        verbose_name='Уникальный юзернейм',
-        unique=True
-    )
     first_name = models.CharField(
         verbose_name='Имя',
-        max_length=150,
+        max_length=FIRST_LAST_NAME,
     )
     last_name = models.CharField(
         verbose_name='Фамилия',
-        max_length=150,
+        max_length=FIRST_LAST_NAME,
     )
     avatar = models.ImageField(
         verbose_name='Аватар',
         null=True,
         blank=True,
-        default=None
     )
 
     class Meta:
@@ -59,9 +47,12 @@ class Subscriptions(models.Model):
     """Модель подписки."""
 
     user = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='user')
+        UserEmail, on_delete=models.CASCADE, related_name='user')
     subscriber = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, related_name='subscriber')
+        UserEmail,
+        on_delete=models.CASCADE,
+        related_name='subscriber'
+    )
 
     class Meta:
         """Meta."""
@@ -69,6 +60,10 @@ class Subscriptions(models.Model):
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         constraints = [
+            models.CheckConstraint(
+                check=~models.Q(user=models.F('subscriber')),
+                name='check_user_subscriber'
+            ),
             models.UniqueConstraint(
                 fields=['user', 'subscriber'],
                 name='unique_user_subscriber'

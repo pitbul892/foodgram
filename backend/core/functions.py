@@ -7,11 +7,11 @@ def txt_file(data):
     for item in data:
         name = item['name']
         ingredients = item['ingredients']
-        ingst = []
+        ingredients_list = []
         for ing in ingredients:
             a = ing['amount']
             i = ing['name']
             ml = ing['measurement_unit']
-            ingst.append(f'{i} - {a} {ml}')
-        result.append(f'{name}:{", ".join(ingst)}')
+            ingredients_list.append(f'{i} - {a} {ml}')
+        result.append(f'{name}:{", ".join(ingredients_list)}')
         return result
