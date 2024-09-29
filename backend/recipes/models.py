@@ -107,7 +107,11 @@ class BaseShopAndFavorite(models.Model):
     """Абстрактная модель списка покупок и избранных."""
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='%(class)s')
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='%(class)s'
+    )
 
     class Meta:
         """Meta."""
