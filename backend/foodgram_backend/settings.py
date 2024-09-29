@@ -106,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'users.UserEmail'
+AUTH_USER_MODEL = 'users.ProfileUser'
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -141,7 +141,7 @@ DJOSER = {
     },
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.AllowAny'],
-        'user': ['rest_framework.permissions.AllowAny'],
+        'user': ['api.permissions.IsAuthenticatedOrReadOnlyOrMe'],
     },
     'HIDE_USERS': False
 }

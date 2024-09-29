@@ -8,10 +8,10 @@ def txt_file(data):
         name = item['name']
         ingredients = item['ingredients']
         ingredients_list = []
-        for ing in ingredients:
-            a = ing['amount']
-            i = ing['name']
-            ml = ing['measurement_unit']
-            ingredients_list.append(f'{i} - {a} {ml}')
+        for ingredient in ingredients:
+            amount = ingredient['amount']
+            ingredient_select = ingredient['name']
+            unit = ingredient['measurement_unit']
+            ingredients_list.append(f'{ingredient_select} - {amount} {unit}')
         result.append(f'{name}:{", ".join(ingredients_list)}')
         return result

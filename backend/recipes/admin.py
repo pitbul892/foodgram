@@ -23,7 +23,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
     def get_favorite_count(self, obj):
         """Получение количества избранных."""
-        return FavoriteRecipes.objects.filter(recipe=obj).count()
+        return obj.favoriterecipes.count()
 
 
 admin.site.register(Tag)

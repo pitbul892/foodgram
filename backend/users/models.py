@@ -1,10 +1,11 @@
 """Модели пользователя и все что с ним связано."""
-from core.constants import FIRST_LAST_NAME
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from core.constants import FIRST_LAST_NAME
 
-class UserEmail(AbstractUser):
+
+class ProfileUser(AbstractUser):
     """Кастомная модель пользоваетля."""
 
     USERNAME_FIELD = 'email'
@@ -47,9 +48,9 @@ class Subscriptions(models.Model):
     """Модель подписки."""
 
     user = models.ForeignKey(
-        UserEmail, on_delete=models.CASCADE, related_name='user')
+        ProfileUser, on_delete=models.CASCADE, related_name='user')
     subscriber = models.ForeignKey(
-        UserEmail,
+        ProfileUser,
         on_delete=models.CASCADE,
         related_name='subscriber'
     )

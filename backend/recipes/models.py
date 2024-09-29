@@ -1,9 +1,10 @@
 """Модели рецептов и все что с ними связано."""
-from core.constants import (INGR_NAME_MAX_LENGHT, INGR_UNIT_MAX_LENGHT,
-                            RECIPE_NAME_MAX_LENGHT, TAG_MAX_LENGHT)
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
+
+from core.constants import (INGR_NAME_MAX_LENGHT, INGR_UNIT_MAX_LENGHT,
+                            RECIPE_NAME_MAX_LENGHT, TAG_MAX_LENGHT)
 
 User = get_user_model()
 
@@ -50,7 +51,6 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         related_name='recipes'
     )
-
     tags = models.ManyToManyField(Tag, blank=False)
     image = models.ImageField(
         upload_to='api/images/',
@@ -71,22 +71,16 @@ class Recipe(models.Model):
         """Имя."""
         return self.name
 
-    @property
-    def ingredients_with_amount(self):
-        """Возвращает список ингредиентов с их количеством."""
-        return RecipeIngredient.objects.filter(
-            recipe=self).select_related('ingredient')
-
 
 class RecipeIngredient(models.Model):
     """Модель взаимодействия ингредиентов с рецептами."""
 
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE,
-                                   related_name='recipe_ingredients')
+                                   related_name='+')
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name='recipe_ingredients'
+        related_name='ingredients'
     )
     amount = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(1)]
@@ -113,12 +107,18 @@ class BaseShopAndFavorite(models.Model):
     """Абстрактная модель списка покупок и избранных."""
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='%(class)s')
 
     class Meta:
         """Meta."""
 
         abstract = True
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'],
+                name='%(class)s_unique_user_recipe'
+            ),
+        ]
 
     def __str__(self):
         """Имя."""
@@ -131,15 +131,10 @@ class ShoppingCart(BaseShopAndFavorite):
     class Meta:
         """Meta."""
 
+        constraints = BaseShopAndFavorite.Meta.constraints
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок пользователей'
         db_table = 'shopping_list'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'recipe'],
-                name='unique_user_recipe'
-            ),
-        ]
 
 
 class FavoriteRecipes(BaseShopAndFavorite):
@@ -151,9 +146,4 @@ class FavoriteRecipes(BaseShopAndFavorite):
         verbose_name = 'Избранный рецепт пользователя.'
         verbose_name_plural = 'Избранные рецепты пользователей.'
         db_table = 'favorite_recipes'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['user', 'recipe'],
-                name='unique_favorite_user_recipe'
-            ),
-        ]
+        constraints = BaseShopAndFavorite.Meta.constraints

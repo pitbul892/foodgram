@@ -1,21 +1,21 @@
 """Функции для работы с рецептами и пользователями."""
-from core import functions
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser import views
-from recipes.models import (FavoriteRecipes, Ingredient, Recipe, ShoppingCart,
-                            Tag)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+
+from core import functions
+from recipes.models import (FavoriteRecipes, Ingredient, Recipe, ShoppingCart,
+                            Tag)
 from users.models import Subscriptions
 
 from .filters import RecipeFilter
-from .permissions import IsAuthorOrReadOnlyPermission
+from .permissions import IsAuthorOrReadOnly
 from .serializers import (AvatarSerializer, FavoriteRecipesSerializer,
                           IngredientSerializer, RecipeCreateSerializer,
                           RecipeReadSerializer, RecipeSerializer,
@@ -50,7 +50,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     filterset_class = RecipeFilter
     filter_backends = (DjangoFilterBackend,)
-    permission_classes = (IsAuthorOrReadOnlyPermission,)
+    permission_classes = (IsAuthorOrReadOnly,)
 
     def get_serializer_class(self):
         """Сериалайзер."""
@@ -149,18 +149,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
 
-class UserViewSet(views.UserViewSet):
+class UserViewSet(viewsets.GenericViewSet):
     """Класс пользователей."""
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (AllowAny,)
-
-    def get_permissions(self):
-        """Изменение прав доступа для метода `me`."""
-        if self.action == 'me':
-            return [IsAuthenticated()]
-        return super().get_permissions()
 
     @action(
         methods=['put', 'delete'],
@@ -195,13 +189,13 @@ class UserViewSet(views.UserViewSet):
             IsAuthenticated,
         ],
     )
-    def subscribe(self, request, id=None):
+    def subscribe(self, request, pk=None):
         """Подписка на пользователя."""
         subscriber = self.request.user
-        user = get_object_or_404(User, id=id)
+        user = get_object_or_404(User, id=pk)
         if request.method == 'POST':
             serializer = SubscribeCreateSerializer(
-                data={'subscriber': subscriber.id, 'user': user.id},
+                data={'subscriber': subscriber.pk, 'user': user.pk},
                 context={"request": request},
             )
             serializer.is_valid(raise_exception=True)

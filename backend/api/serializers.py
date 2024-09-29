@@ -3,10 +3,11 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import ValidationError
 from drf_extra_fields.fields import Base64ImageField
-from recipes.models import (FavoriteRecipes, Ingredient, Recipe,
-                            RecipeIngredient, ShoppingCart, Tag)
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
+
+from recipes.models import (FavoriteRecipes, Ingredient, Recipe,
+                            RecipeIngredient, ShoppingCart, Tag)
 from users.models import Subscriptions
 
 User = get_user_model()
@@ -233,7 +234,7 @@ class RecipeReadSerializer(serializers.ModelSerializer):
 
     def get_ingredients(self, obj):
         """Получение ингредиентов."""
-        recipe_ingredients = obj.ingredients_with_amount
+        recipe_ingredients = obj.ingredients.select_related('ingredient')
         return [
             {
                 "id": recipe_ingredient.ingredient.id,
