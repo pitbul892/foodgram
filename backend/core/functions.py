@@ -6,12 +6,12 @@ def txt_file(data):
     result = []
     for item in data:
         name = item['name']
-        ingredients = item['ingredients']
-        ingredients_list = []
-        for ingredient in ingredients:
+        ingredients_data = item['ingredients']
+        ingredients = []
+        for ingredient in ingredients_data:
             amount = ingredient['amount']
             ingredient_select = ingredient['name']
             unit = ingredient['measurement_unit']
-            ingredients_list.append(f'{ingredient_select} - {amount} {unit}')
-        result.append(f'{name}:{", ".join(ingredients_list)}')
+            ingredients.append(f'{ingredient_select} - {amount} {unit}')
+        result.append(f'{name}:{", ".join(ingredients)}')
         return result

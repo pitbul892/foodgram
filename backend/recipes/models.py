@@ -132,10 +132,9 @@ class BaseShopAndFavorite(models.Model):
 class ShoppingCart(BaseShopAndFavorite):
     """Модель списка покупок."""
 
-    class Meta:
+    class Meta(BaseShopAndFavorite.Meta):
         """Meta."""
 
-        constraints = BaseShopAndFavorite.Meta.constraints
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок пользователей'
         db_table = 'shopping_list'
@@ -144,10 +143,9 @@ class ShoppingCart(BaseShopAndFavorite):
 class FavoriteRecipes(BaseShopAndFavorite):
     """Модель избранных рецептов."""
 
-    class Meta:
+    class Meta(BaseShopAndFavorite.Meta):
         """Meta."""
 
         verbose_name = 'Избранный рецепт пользователя.'
         verbose_name_plural = 'Избранные рецепты пользователей.'
         db_table = 'favorite_recipes'
-        constraints = BaseShopAndFavorite.Meta.constraints

@@ -340,7 +340,7 @@ class SubscriptionSerializer(UserSerializer):
         limit = self.context.get('recipes_limit')
         recipes = obj.recipes.all()
         if limit:
-            recipes = obj.recipes.all()[: int(limit)]
+            recipes = obj.recipes.all()[:int(limit)]
         serializer = RecipeSerializer(recipes, many=True)
         return serializer.data
 
