@@ -30,7 +30,7 @@ DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 HOST = "https://ddd"
-
+CSRF_TRUSTED_ORIGINS = ['https://foodgram.freedynamicdns.org/']
 # Application definition
 
 INSTALLED_APPS = [
