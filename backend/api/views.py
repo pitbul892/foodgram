@@ -232,7 +232,9 @@ class UserViewSet(viewsets.GenericViewSet):
     def subscriptions(self, request):
         """Список подписок."""
         paginator = LimitOffsetPagination()
-        users = User.objects.filter(subscriber__subscriber=request.user)
+        subscriptions = Subscriptions.objects.filter(subscriber=request.user)
+        users = [subscription.user for subscription in subscriptions]
+
         paginated_users = paginator.paginate_queryset(
             users, request, view=self
         )

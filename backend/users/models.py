@@ -48,11 +48,11 @@ class Subscriptions(models.Model):
     """Модель подписки."""
 
     user = models.ForeignKey(
-        ProfileUser, on_delete=models.CASCADE, related_name='user')
+        ProfileUser, on_delete=models.CASCADE, related_name='subscribers')
     subscriber = models.ForeignKey(
         ProfileUser,
         on_delete=models.CASCADE,
-        related_name='subscriber'
+        related_name='subscribtions'
     )
 
     class Meta:
