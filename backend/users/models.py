@@ -48,7 +48,7 @@ class Subscriptions(models.Model):
     """Модель подписки."""
 
     user = models.ForeignKey(
-        ProfileUser, on_delete=models.CASCADE, related_name='user')
+        ProfileUser, on_delete=models.CASCADE, related_name='subscriptions')
     subscriber = models.ForeignKey(
         ProfileUser,
         on_delete=models.CASCADE,
